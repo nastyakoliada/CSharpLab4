@@ -30,54 +30,48 @@ public class MusicCatalogRestClient : IMusicCatalog,IDisposable
         httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json", 1.0));
     }
     #region IMusicCatalog interface
-    public void AddComposition(Composition composition)
+    public async Task AddComposition(Composition composition)
     {
-        using var responce = httpClient.PostAsJsonAsync<Data.Composition>(requestUri: API_PATH,
+        using var  responce = await httpClient.PostAsJsonAsync<Data.Composition>(requestUri: API_PATH,
             value: new Data.Composition
             {
                 Author=composition.Author,
                 SongName=composition.SongName,
             });
-        responce.Wait();
-        using Task<Data.Composition?>? c = responce.Result.Content.ReadFromJsonAsync<Data.Composition>();
-        c?.Wait();
+        
+        Data.Composition? c = await responce.Content.ReadFromJsonAsync<Data.Composition>();        
     }
     
-    public IEnumerable<Composition> EnumerateAllCompositions()
+    public async Task<IEnumerable<Composition>> EnumerateAllCompositions()
     {
-        using HttpRequestMessage request = new(method: HttpMethod.Get, requestUri: API_PATH);
-        
-        using HttpResponseMessage responce = httpClient.Send(request);
-        using var result =  responce.Content.ReadFromJsonAsync<IEnumerable<Data.Composition>>();
-        result?.Wait();
-
-        return  result?.Result is null ? Enumerable.Empty<Composition>() :
-            result.Result.Select(c => new Composition
+        using HttpRequestMessage request = new(method: HttpMethod.Get, requestUri: API_PATH);        
+        using HttpResponseMessage responce = await httpClient.SendAsync(request);
+        var result = await responce.Content.ReadFromJsonAsync<IEnumerable<Data.Composition>>();        
+        return  result is null ? Enumerable.Empty<Composition>() :
+            result.Select(c => new Composition
             {
                 Author = c.Author ?? "",
                 SongName = c.SongName ?? "",
             });
     }
 
-    public int Remove(string query)
+    public async Task<int> Remove(string query)
     {
         using HttpRequestMessage request = new(method: HttpMethod.Delete, requestUri: $"{API_PATH}{query}");
-        using HttpResponseMessage responce = httpClient.Send(request);
-        using var result = responce.Content.ReadFromJsonAsync<int>();
-        result?.Wait();
-        return result?.Result is null ? 0 : result.Result;
+        using HttpResponseMessage responce = await httpClient.SendAsync(request);
+        int result = await responce.Content.ReadFromJsonAsync<int>();        
+        return result;
     }
 
-    public IEnumerable<Composition> Search(string query)
+    public async Task<IEnumerable<Composition>> Search(string query)
     {
         using HttpRequestMessage request = new(method: HttpMethod.Get, requestUri: $"{API_PATH}?query={query}");
 
-        using HttpResponseMessage responce = httpClient.Send(request);
-        using var result = responce.Content.ReadFromJsonAsync<IEnumerable<Data.Composition>>();
-        result?.Wait();
+        using HttpResponseMessage responce = await httpClient.SendAsync(request);
+        var result = await responce.Content.ReadFromJsonAsync<IEnumerable<Data.Composition>>();        
 
-        return result?.Result is null ? Enumerable.Empty<Composition>() :
-            result.Result.Select(c => new Composition
+        return result is null ? Enumerable.Empty<Composition>() :
+            result.Select(c => new Composition
             {
                 Author = c.Author ?? "",
                 SongName = c.SongName ?? "",

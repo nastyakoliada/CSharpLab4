@@ -1,4 +1,4 @@
-﻿
+﻿using Microsoft.EntityFrameworkCore;
 using MusicCatalog.Data;
 namespace MusicCatalog.Laba4;
 /// <summary>
@@ -40,18 +40,18 @@ public class MusicCatalogSQLite:IMusicCatalog
     /// Метод доавляет композицию к перечню
     /// </summary>
     /// <param name="composition">Композиция, которую следует добавить</param>
-    public void AddComposition(Composition composition)
+    public async Task AddComposition(Composition composition)
     {
         using(MusicCatalogContext context = new MusicCatalogContext(fileName))
         {
-            context.Compositions?.Add(
-                new Data.Composition
-                {
-                    Author = composition.Author,
-                    SongName = composition.SongName,
-                }
-                );
-            context.SaveChanges();
+            await context.Compositions.AddAsync(
+               new Data.Composition
+               {
+                   Author = composition.Author,
+                   SongName = composition.SongName,
+               }
+               );
+            await context.SaveChangesAsync();
         }
     }
     /// <summary>
@@ -59,18 +59,18 @@ public class MusicCatalogSQLite:IMusicCatalog
     /// Композиции отсортированы сначала по автору, потом по названию
     /// </summary>
     /// <returns></returns>
-    public IEnumerable<Composition> EnumerateAllCompositions()
+    public async Task<IEnumerable<Composition>> EnumerateAllCompositions()
     {
         using (MusicCatalogContext context = new MusicCatalogContext(fileName))
         {
-            return context.Compositions
+            return await context.Compositions
                 .OrderBy(c => c.Author)
                 .ThenBy(c => c.SongName)
                 .Select(c => new Composition
                 {
                     Author = c.Author ?? "",
                     SongName = c.SongName ?? "",
-                }).ToList();
+                }).ToListAsync();
         }
     }
     /// <summary>
@@ -79,16 +79,16 @@ public class MusicCatalogSQLite:IMusicCatalog
     /// </summary>
     /// <param name="query">Критерий поиска композиций</param>
     /// <returns>Enumerator для перебора</returns>
-    public int Remove(string query)
+    public async Task<int> Remove(string query)
     {
         using (MusicCatalogContext context = new MusicCatalogContext(fileName))
         {
-            var listToRemove = context.Compositions
+            var listToRemove =await  context.Compositions
                 .Where(c => (c.Author!.Contains(query))
-                || (c.SongName!.Contains(query))).ToList();
+                || (c.SongName!.Contains(query))).ToListAsync();
 
             context.Compositions.RemoveRange(listToRemove);
-            context.SaveChanges();
+            await context.SaveChangesAsync();
             return listToRemove.Count;
         }
     }
@@ -97,11 +97,11 @@ public class MusicCatalogSQLite:IMusicCatalog
     /// </summary>
     /// <param name="query">Критерий поиска</param>
     /// <returns>Количество удаленных композиций</returns>
-    public IEnumerable<Composition> Search(string query)
+    public async Task<IEnumerable<Composition>> Search(string query)
     {
         using (MusicCatalogContext context = new MusicCatalogContext(fileName))
         {
-            return context.Compositions
+            return await context.Compositions
                 .Where(c => (c.Author!.Contains(query))
                 || (c.SongName!.Contains(query)))
                 .OrderBy(c => c.Author)
@@ -110,7 +110,7 @@ public class MusicCatalogSQLite:IMusicCatalog
                 {
                     Author = c.Author ?? "",
                     SongName = c.SongName ?? "",
-                }).ToList();
+                }).ToListAsync();
         }
     }
     #endregion

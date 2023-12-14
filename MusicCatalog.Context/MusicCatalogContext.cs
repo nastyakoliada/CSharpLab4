@@ -6,7 +6,7 @@ public class MusicCatalogContext : DbContext
     /// <summary>
     /// Имя файла бд. 
     /// </summary>
-    private string fileName = "..\\mc.db";
+    private readonly string fileName = "..\\mc.db";
 
     public DbSet<Composition> Compositions { get; set; }
     public MusicCatalogContext(string fileName)

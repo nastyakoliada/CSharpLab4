@@ -66,52 +66,52 @@ public class MusicCatalogLaba4Testing
     /// Тестирование на сериализацию указанного экземпляра <see cref="IMusicCatalog"/>
     /// </summary>
     /// <param name="createNew">Делегат для создания экземпляра <see cref="IMusicCatalog"/></param>
-    private void TestSerialization(Func<IMusicCatalog> createNew)
+    private async void TestSerialization(Func<IMusicCatalog> createNew)
     {
         IMusicCatalog catalog = createNew();
 
         // Очистим от предыдущих проверок
-        foreach (var c in catalog.EnumerateAllCompositions()) {
-            catalog.Remove(c.Author);
+        foreach (var c in await catalog.EnumerateAllCompositions()) {
+            await catalog.Remove(c.Author);
         }               
 
         //Проверяем, что каталог пустой
-        Assert.Empty(catalog.EnumerateAllCompositions());
+        Assert.Empty(await catalog.EnumerateAllCompositions());
 
         // Заносим в каталог новые данные
-        foreach (var composition in _compositions) catalog.AddComposition(composition);
+        foreach (var composition in _compositions) await catalog.AddComposition(composition);
 
         // Проверяем, что там есть то, что занесли
-        TestExistance(catalog);
+        await TestExistance(catalog);
 
         // Создаем второй каталог и проверяем, что там есть то, что заносили в первый
         IMusicCatalog catalog2 = createNew();
 
         //Проверяем что там есть то, что занесли в первый
-        TestExistance(catalog2);
+        await TestExistance(catalog2);
 
         // Теперь удалим первого и проверим, что оастался второй
 
-        catalog2.Remove(_compositions[0].Author);
+        await catalog2.Remove(_compositions[0].Author);
 
-        Assert.Single(catalog2.EnumerateAllCompositions());
-        Assert.Collection<Composition>(catalog2.EnumerateAllCompositions(),
+        Assert.Single(await catalog2.EnumerateAllCompositions());
+        Assert.Collection<Composition>(await catalog2.EnumerateAllCompositions(),
             c => Assert.Equal(_compositions[1].Author, c.Author));
 
         // Теперь удалим второго и убедимся, что коллекция пустая
-        catalog2.Remove(_compositions[1].Author);
-        Assert.Empty(catalog2.EnumerateAllCompositions());
+        await catalog2.Remove(_compositions[1].Author);
+        Assert.Empty(await catalog2.EnumerateAllCompositions());
 
     }
     /// <summary>
     /// Метод для проверки, что в каталоге есть то и только то, что в него занесли
     /// </summary>
     /// <param name="catalog"></param>
-    private void TestExistance(IMusicCatalog catalog)
+    private async Task TestExistance(IMusicCatalog catalog)
     {
         //проверяем, что они там есть и по алфавиту
 
-        Assert.Collection<Composition>(catalog.EnumerateAllCompositions(),
+        Assert.Collection<Composition>(await catalog.EnumerateAllCompositions(),
             c =>
             {
                 Assert.Equal(_compositions[1].Author, c.Author);
@@ -125,7 +125,7 @@ public class MusicCatalogLaba4Testing
             );
 
         //Проверяем, что их там 2 штуки
-        Assert.Equal(_compositions.Count(), catalog.EnumerateAllCompositions().Count());
+        Assert.Equal(_compositions.Count(),(await catalog.EnumerateAllCompositions()).Count());
     }
 
     /// <summary>

@@ -21,3 +21,10 @@
 	через WebService (MusicCatalogLaba4Testing.TestWebServiceSerialization). При выполнении теста
 	WebService должен быть запущен.
 	А также модульные тесты работы контроллера сервиса - RestApiTesting не требующие запуска сервиса
+
+
+После исправлений
+1. Интерфейсы ISerializer и IMusicCatalog содержат асинхронные методы
+2. Класс работы с музыкальным каталогом, которые реализовывали IMusicCatalog и ISerializer, это - MusicCatalog, классы сериализации MCSerializerXml и MCSerializerJSon, 
+классы MusicСatalogRestClient, MusicCatalogSQLite изменены для поддержки асинхронной работы методов этих интерфейсов
+3. Переписаны модульные тесты для тестирования асинхронных вызовов.

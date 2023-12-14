@@ -5,20 +5,24 @@
 /// </summary>
 public class MusicCatalog : IMusicCatalog
 {
+    
     /// <summary>
     /// Сериализатор для использования
     /// </summary>
-    private readonly ISerializer<List<Composition>> serializer = null!;
+    private readonly ISerializer<IEnumerable<Composition>> serializer = null!;
     /// <summary>
     /// Конструктор с указанием сериализатора
     /// </summary>
     /// <param name="serializer">Сериализатор для использования в дальнейшем</param>
-    public MusicCatalog(ISerializer<List<Composition>> serializer)
-    {
+    public MusicCatalog(ISerializer<IEnumerable<Composition>> serializer)
+    {       
         this.serializer = serializer;
-        Compositions = serializer.Deserialize()  ?? new List<Composition>();
-    }    
-    
+        using var res = serializer.Deserialize();
+        res.Wait();
+        Compositions = res.Result?.ToList() ?? new List<Composition>();
+    }
+
+
     /// <summary>
     /// Перечень композиций
     /// </summary>
@@ -29,17 +33,23 @@ public class MusicCatalog : IMusicCatalog
     /// Метод доавляет композицию к перечню
     /// </summary>
     /// <param name="composition">Композиция, которую следует добавить</param>
-    public void AddComposition(Composition composition)
+    public async Task AddComposition(Composition composition)
     {
         Compositions.Add(composition);
-        Serialize();
+        await Serialize();
     }
     /// <summary>
     /// Метод возвращает enumerator для перебора всех композици каталога.
     /// Композиции отсортированы сначала по автору, потом по названию
     /// </summary>
     /// <returns></returns>
-    public IEnumerable<Composition>  EnumerateAllCompositions() => Compositions.OrderBy(c => c.Author).ThenBy(c => c.SongName);
+    public async Task<IEnumerable<Composition>> EnumerateAllCompositions()
+    {
+        return await Task.Run(() =>
+        {
+            return Compositions.OrderBy(c => c.Author).ThenBy(c => c.SongName);
+        });
+    }
 
     /// <summary>
     /// Метод возвращает enumerator для перебора композиций, удовлетворяющих
@@ -47,26 +57,32 @@ public class MusicCatalog : IMusicCatalog
     /// </summary>
     /// <param name="query">Критерий поиска композиций</param>
     /// <returns>Enumerator для перебора</returns>
-    public IEnumerable<Composition> Search(string query) => Compositions
-            .Where(c => c.Author.Contains(query,StringComparison.OrdinalIgnoreCase) 
-            || c.SongName.Contains(query,StringComparison.OrdinalIgnoreCase))
+    public async Task<IEnumerable<Composition>> Search(string query)
+    {
+        return await Task.Run(() =>
+        {
+           return Compositions
+            .Where(c => c.Author.Contains(query, StringComparison.OrdinalIgnoreCase)
+            || c.SongName.Contains(query, StringComparison.OrdinalIgnoreCase))
             .OrderBy(c => c.Author)
             .ThenBy(c => c.SongName);
+        });
+    }
     
     /// <summary>
     /// Метод удаляет из каталога композиции, удовлетворяющие критерию поиска
     /// </summary>
     /// <param name="query">Критерий поиска</param>
     /// <returns>Количество удаленных композиций</returns>
-    public int Remove(string query)
+    public async Task<int> Remove(string query)
     {
-        var removeList = Search(query).ToList();
+        var removeList = (await Search(query)).ToList();
         
         foreach(var item in removeList)
         {
             Compositions.Remove(item);
         }
-        Serialize();
+        await Serialize();
 
         return removeList.Count;
        
@@ -76,9 +92,9 @@ public class MusicCatalog : IMusicCatalog
     /// <summary>
     /// Сериализация каталога.
     /// </summary>
-    private void Serialize()
+    private async Task Serialize()
     {
-        serializer?.Serialize(Compositions);
+        await serializer?.Serialize(Compositions)!;
     }
     
 }

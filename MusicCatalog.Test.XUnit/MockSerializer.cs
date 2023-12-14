@@ -5,12 +5,12 @@ namespace MusicCatalog.Test.XUnit;
 /// <summary>
 /// Фейковый сериализатор для проверки прохождения команд на сериализацию
 /// </summary>
-internal class MockSerializer : ISerializer<List<Composition>>
+internal class MockSerializer : ISerializer<IEnumerable<Composition>>
 {
     /// <summary>
     /// Начальный список композиций, как бы десериализированный
     /// </summary>
-    public List<Composition> Compositions { get; set; } = new List<Composition>()
+    public IEnumerable<Composition> Compositions { get; set; } = new List<Composition>()
     {
         new Composition
         {
@@ -26,20 +26,21 @@ internal class MockSerializer : ISerializer<List<Composition>>
     /// <summary>
     /// Список композиций, который нужно сериализовать
     /// </summary>
-    public List<Composition> SerializedCompositions { get; set; } = null!;
+    public IEnumerable<Composition> SerializedCompositions { get; set; } = null!;
     /// <summary>
     /// Метод интерфейса <see cref="ISerializer{T}"/>
     /// </summary>
     /// <returns>Возвращает предопреленный список композиций</returns>
-    public List<Composition> Deserialize()
+    public Task<IEnumerable<Composition>> Deserialize()
     {
-        return Compositions;
+        return Task.FromResult<IEnumerable<Composition>>(Compositions);
     }
     /// <summary>
     /// Метод интерфейса <see cref="ISerializer{T}"/> сохранаяет полученный список композиций для сериализации
     /// </summary>
-    public void Serialize(List<Composition> compositions)
+    public Task Serialize(IEnumerable<Composition> compositions)
     {
         SerializedCompositions = compositions;
+        return Task.CompletedTask;
     }
 }

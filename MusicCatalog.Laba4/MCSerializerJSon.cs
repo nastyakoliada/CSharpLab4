@@ -6,7 +6,7 @@ namespace MusicCatalog.Laba4;
 /// <summary>
 /// Сериализатор JSon
 /// </summary>
-public class MCSerializerJSon : ISerializer<List<Composition>>
+public class MCSerializerJSon : ISerializer<IEnumerable<Composition>>
 {
     /// <summary>
     ///  Полное имя файла для сериализации
@@ -24,14 +24,14 @@ public class MCSerializerJSon : ISerializer<List<Composition>>
     /// Десериализация списка композиций
     /// </summary>
     /// <returns>Список композиций</returns>
-    public List<Composition> Deserialize()
+    public async Task<IEnumerable<Composition>> Deserialize()
     {
         if (string.IsNullOrEmpty(fileName)) return null!;
         if (!File.Exists(fileName)) return null!;
 
         using (FileStream file = File.OpenRead(fileName))
         {
-            return (List<Composition>)JsonSerializer.Deserialize(file, typeof(List<Composition>),
+            return await JsonSerializer.DeserializeAsync<IEnumerable<Composition>>(file,
                 new JsonSerializerOptions
                 {
                     Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Cyrillic)
@@ -45,11 +45,11 @@ public class MCSerializerJSon : ISerializer<List<Composition>>
     /// </summary>
     /// <param name="compositions">Список композиций</param>
 
-    public void Serialize(List<Composition> compositions)
+    public async Task Serialize(IEnumerable<Composition> compositions)
     {
         using (FileStream file = File.Create(fileName))
         {
-            JsonSerializer.Serialize(file, compositions, new JsonSerializerOptions
+            await JsonSerializer.SerializeAsync(file, compositions, new JsonSerializerOptions
             {
                 Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Cyrillic),
                 WriteIndented = true,

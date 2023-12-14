@@ -9,10 +9,10 @@ public interface ISerializer<T>
     /// Сериализация объекта
     /// </summary>
     /// <param name="compositions"></param>
-    void Serialize(T compositions);
+    Task Serialize(T compositions);
     /// <summary>
     /// Десериализация объекта
     /// </summary>
     /// <returns></returns>
-    T Deserialize();
+    Task<T> Deserialize();
 }

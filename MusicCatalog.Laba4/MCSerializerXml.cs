@@ -4,7 +4,7 @@ namespace MusicCatalog.Laba4;
 /// <summary>
 /// Сериализатор xml 
 /// </summary>
-public class MCSerializerXml:ISerializer<List<Composition>>
+public class MCSerializerXml:ISerializer<IEnumerable<Composition>>
 {
     /// <summary>
     /// Полное имя файла для сериализации
@@ -18,27 +18,35 @@ public class MCSerializerXml:ISerializer<List<Composition>>
     /// Десериализация списка композиций
     /// </summary>
     /// <returns>Список композиций</returns>
-    public List<Composition> Deserialize()
+    public async Task<IEnumerable<Composition>> Deserialize()
     {
-        if (string.IsNullOrEmpty(fileName)) return null!;
-        if(!File.Exists(fileName)) return null!;
-
-        XmlSerializer xs = new XmlSerializer(typeof(List<Composition>));
-        using (FileStream file = File.OpenRead(fileName))
+        return await Task.Run(() =>
         {
-            return ((List<Composition>)xs.Deserialize(file)!) ?? new List<Composition>();
-        }
+            if (string.IsNullOrEmpty(fileName)) return null!;
+            if (!File.Exists(fileName)) return null!;
+
+            XmlSerializer xs = new(typeof(List<Composition>));
+
+            using (FileStream file = File.OpenRead(fileName))
+            {                
+                return ((List<Composition>)xs.Deserialize(file)!) ?? new List<Composition>();
+            }
+        });
+        
     }
     /// <summary>
     /// Сериализация списка композиций
     /// </summary>
     /// <param name="compositions">Список композиций</param>
-    public void Serialize(List<Composition> compositions)
+    public async Task Serialize(IEnumerable<Composition> compositions)
     {
-        XmlSerializer xs = new XmlSerializer(typeof(List<Composition>));
-        using (StreamWriter sw = new StreamWriter(fileName, false, Encoding.UTF8))
+        await Task.Run(() =>
         {
-            xs.Serialize(sw, compositions);
-        }
+            XmlSerializer xs = new XmlSerializer(typeof(List<Composition>));
+            using (StreamWriter sw = new StreamWriter(fileName, false, Encoding.UTF8))
+            {
+                xs.Serialize(sw, compositions);
+            }
+        });
     }
 }

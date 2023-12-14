@@ -125,10 +125,10 @@ public class MusicCatalogCommander
     /// <summary>
     /// Выполнение команды пользователя по занесении композиции в каталог
     /// </summary>
-    public void Add()
+    public async  void Add()
     {
 
-        catalog.AddComposition(
+        await catalog.AddComposition(
             new Composition
             {
                 Author = ReadString("Имя автора:"),
@@ -139,9 +139,11 @@ public class MusicCatalogCommander
     /// <summary>
     /// Выполняет команду вывода полного содержимого каталога
     /// </summary>
-    public void List()
+    public async void List()
     {
-        PrintSongs("\nСписок всех песен:", catalog.EnumerateAllCompositions());
+        var list = await catalog.EnumerateAllCompositions();
+        
+        PrintSongs("\nСписок всех песен:", list);
     }
     /// <summary>
     /// Метод выводит на консоль перечень композиций
@@ -160,17 +162,21 @@ public class MusicCatalogCommander
     /// Выполняет команду пользователя на удаление композиций из каталога, удовлетворяющих
     /// заданному критерию поиска
     /// </summary>
-    public void Remove()
+    public async void Remove()
     {
-        WriteLine($"Удалено {catalog.Remove(ReadString("Что удаляем?:"))} песен.");
+        var rem = await catalog.Remove(ReadString("Что удаляем?:"));
+        
+        WriteLine($"Удалено {rem} песен.");
     }
     /// <summary>
     ///  Выполняет команду пользователя на вывод на консоль перечня композиций, удовлетворяющих
     ///  заданному критерию поиска
     /// </summary>
-    public void Search()
+    public async void Search()
     {
-        PrintSongs("\nРезультат поиска:", catalog.Search(ReadString("Что ищем ?:")));
+        var res =await catalog.Search(ReadString("Что ищем ?:"));
+        
+        PrintSongs("\nРезультат поиска:",res);
     }
     /// <summary>
     /// Выполняет команду пользователя о завершении работы

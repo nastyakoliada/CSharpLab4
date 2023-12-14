@@ -22,12 +22,12 @@ public class MusicCatalogTesting
     /// Тестирование заполнение каталога
     /// </summary>
     [Fact]
-    public void AddTesting()
+    public async void AddTesting()
     {
         // Создаем каталог, получаем фейковый сериализатор для проверок
         var ts = CreateTestCatalog();
         // Добавляем новую композицию
-        catalog.AddComposition(new Composition { Author = "Billy Joel", SongName = "Piano man" });
+        await catalog.AddComposition(new Composition { Author = "Billy Joel", SongName = "Piano man" });        
 
         //Проверяем, что в сериализаторе прошел вызов сериализации всех композиций
         Assert.Collection<Composition>(ts.SerializedCompositions,
@@ -50,10 +50,10 @@ public class MusicCatalogTesting
     }
     // Тестирование на то, что работает команда на получение всех композиций
     [Fact]
-    public void EnumerateTesting()
+    public async void EnumerateTesting()
     {
         CreateTestCatalog();
-        Assert.Collection<Composition>(catalog.EnumerateAllCompositions(),
+        Assert.Collection<Composition>(await catalog.EnumerateAllCompositions(),
             c =>
             {
                 Assert.Equal("Billie Eilish", c.Author);
@@ -70,12 +70,12 @@ public class MusicCatalogTesting
     /// Тестирование удаления композиций из каталога
     /// </summary>
     [Fact]
-    public void RemoveTesting()
+    public async void RemoveTesting()
     {
         // создаем каталог, с использованием фекового сериализатора
         var ts = CreateTestCatalog();
         // Проверяем, что после удаления, сериализатор получил для сохранения только одну композицию
-        catalog.Remove("Sia");
+        await catalog.Remove("Sia");
         Assert.Collection<Composition>(ts.SerializedCompositions,
             c =>
             {
@@ -89,11 +89,11 @@ public class MusicCatalogTesting
     /// Тестировнаие поиска в каталоге
     /// </summary>
     [Fact]
-    public void SearchTesting()
+    public async void SearchTesting()
     {
         CreateTestCatalog();
 
-        var sch = catalog.Search("Bil");
+        var sch = await catalog.Search("Bil");
 
         Assert.Collection<Composition>(sch,
             c =>

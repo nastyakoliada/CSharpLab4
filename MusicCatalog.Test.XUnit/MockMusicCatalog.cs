@@ -29,35 +29,36 @@ internal class MockMusicCatalog : IMusicCatalog
     /// Метод интерфейса <see cref="IMusicCatalog"/>
     /// </summary>
     /// <param name="composition"></param>
-    public void AddComposition(Composition composition)
+    public  Task AddComposition(Composition composition)
     {
         Compositions.Add(composition);
+        return Task.CompletedTask;
     }
     /// <summary>
     /// Метод интерфейса <see cref="IMusicCatalog"/>
     /// </summary>
 
-    public IEnumerable<Composition> EnumerateAllCompositions()
+    public Task<IEnumerable<Composition>> EnumerateAllCompositions()
     {
         ListCallsNumber++;
-        return Compositions;
+        return Task.FromResult<IEnumerable<Composition>>(Compositions);
     }
     /// <summary>
     /// Метод интерфейса <see cref="IMusicCatalog"/>
     /// </summary>
 
-    public int Remove(string query)
+    public Task<int> Remove(string query)
     {
         RemoveQuery = query;
-        return 0;
+        return Task.FromResult<int>(0);
     }
     /// <summary>
     /// Метод интерфейса <see cref="IMusicCatalog"/>
     /// </summary>
 
-    public IEnumerable<Composition> Search(string query)
+    public Task<IEnumerable<Composition>> Search(string query)
     {
         SearhQuery = query;
-        return Compositions;
+        return Task.FromResult<IEnumerable<Composition>>(Compositions);
     }
 }
